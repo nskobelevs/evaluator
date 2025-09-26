@@ -1,0 +1,107 @@
+[
+  {
+    "name": "Simple Rule",
+    "message": "field foo must be 10",
+    "predicate": {
+      "path": "foo",
+      "operator": "equal",
+      "value": 10
+    }
+  },
+  {
+    "name": "And Rule",
+    "message": "fizz must be 3 and buzz must be 5",
+    "predicate": {
+      "all": [
+        {
+          "path": "fizz",
+          "operator": "==",
+          "value": 3
+        },
+
+        {
+          "path": "buzz",
+          "operator": "equal",
+          "value": 5
+        }
+      ]
+    }
+  },
+  {
+    "name": "Complicated Rule",
+    "message": "Data must adhere to compilcated spec",
+    "predicate": {
+      "any": [
+        {
+          "path": "what",
+          "operator": "equal",
+          "value": [1, 2, 3, 4]
+        },
+        {
+          "all": [
+            {
+              "path": "a.b.c",
+              "operator": "less",
+              "value": 45
+            },
+            {
+              "path": "a.b.c",
+              "operator": "greater",
+              "value": 18
+            },
+            {
+              "none": [
+                {
+                  "path": "fizz",
+                  "operator": "equal",
+                  "value": 10
+                },
+                {
+                  "path": "buzz",
+                  "operator": "equal",
+                  "value": 12
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "Sample Rule",
+    "message": "You must be above 5'2'' and over the age of 12 to use this water slide",
+    "predicate": {
+      "all": [
+        {
+          "path": "age",
+          "operator": ">=",
+          "value": 12
+        },
+        {
+          "any": [
+            {
+              "path": "height.feet",
+              "operator": ">",
+              "value": "5"
+            },
+            {
+              "all": [
+                {
+                  "path": "height.feet",
+                  "operator": "==",
+                  "value": 5
+                },
+                {
+                  "path": "height.inches",
+                  "operator": ">=",
+                  "value": 2
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+]
