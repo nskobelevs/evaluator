@@ -1,7 +1,10 @@
 use std::fs;
 
+use serde_json::Value;
+
 use crate::rule::Rule;
 
+mod eval;
 mod rule;
 
 fn main() {
@@ -9,9 +12,5 @@ fn main() {
 
     let rules: Vec<Rule> = serde_json::from_str(&input).unwrap();
 
-    println!("{rules:#?}");
-
-    let json = serde_json::to_string_pretty(&rules).unwrap();
-
-    println!("{json}");
+    println!("{rules:?}");
 }

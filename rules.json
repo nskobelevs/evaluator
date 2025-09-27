@@ -70,7 +70,7 @@
   },
   {
     "name": "Sample Rule",
-    "message": "You must be above 5'2'' and over the age of 12 to use this water slide",
+    "message": "You must be at least 5'2'' and over the age of 12 to use this water slide",
     "predicate": {
       "all": [
         {
@@ -83,7 +83,7 @@
             {
               "path": "height.feet",
               "operator": ">",
-              "value": "5"
+              "value": 5
             },
             {
               "all": [

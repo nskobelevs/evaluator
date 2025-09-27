@@ -43,7 +43,7 @@ type CompoundPredicate =
 
 ### Operators
 
-- `equal` / `==` - Evaluates strict equality. Supports arbitrary JSON and will perform deep equality checks. The input and value types must be equal.
+- `equal` / `==` - Evaluates strict equality. Supports arbitrary JSON and will perform deep equality checks. Does not perform any kind of type coercion so can only evaluate to true if both the input and value types are equal.
 - `notEqual` / `!=` - Evalutes strict inequality. Shorthand for wrapping `equal` in `not` so same restrictions as for `equal` apply.
 - Mathematical operators - The input and value type must both be `number`.
   - `greater` / `>`
@@ -69,7 +69,7 @@ type Rule = {
 ```JSON
 {
   "name": "Waterpark Rule",
-  "message": "You must be above 5'2'' and over the age of 12 to use this water slide",
+  "message": "You must be at least 5'2'' and over the age of 12 to use this water slide",
   "predicate": {
     "all": [
       {
