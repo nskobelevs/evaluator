@@ -63,56 +63,11 @@ pub enum Operator {
     Contains,
 }
 
-mod macros {
-    macro_rules! rule {
-        ($name:literal, $message:literal, $predicate:expr) => {
-            crate::rule::Rule {
-                name: String::from($name),
-                message: String::from($message),
-                predicate: crate::rule::Predicate::from($predicate),
-            }
-        };
-    }
-
-    macro_rules! predicate {
-            ($path:literal $operator:tt $value:expr) => {
-                    crate::rule::RawPredicate {
-                    path: $path.to_owned(),
-                    operator: predicate!(operator $operator),
-                    value: serde_json::Value::from($value)
-                }
-            };
-            (operator ==) => {crate::rule::Operator::Equal};
-            (operator >) => {crate::rule::Operator::Greater};
-            (operator <) => {crate::rule::Operator::Less};
-            (operator >=) => {crate::rule::Operator::GreaterEqual};
-            (operator <=) => {crate::rule::Operator::LessEqual};
-            (operator !=) => {crate::rule::Operator::NotEqual};
-            (operator contains) => {crate::rule::Operator::Contains};
-        }
-
-    macro_rules! any { ($($predicate:expr),*) => {crate::rule::CompoundPredicate::Any(vec![$(crate::rule::Predicate::from($predicate),)*])}; }
-    macro_rules! all { ($($predicate:expr),*) => {crate::rule::CompoundPredicate::All(vec![$(crate::rule::Predicate::from($predicate),)*])}; }
-    macro_rules! none { ($($predicate:expr),*) => {crate::rule::CompoundPredicate::None(vec![$(crate::rule::Predicate::from($predicate),)*])}; }
-    macro_rules! not {
-        ($predicate:expr) => {
-            crate::rule::CompoundPredicate::Not(Box::new(crate::rule::Predicate::from($predicate)))
-        };
-    }
-
-    pub(crate) use all;
-    pub(crate) use any;
-    pub(crate) use none;
-    pub(crate) use not;
-    pub(crate) use predicate;
-    pub(crate) use rule;
-}
-
-pub(crate) use macros::*;
-
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    use crate::{all, any, predicate, rule};
 
     mod deserialize {
         use serde_json::json;

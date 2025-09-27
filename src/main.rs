@@ -1,11 +1,6 @@
 use std::fs;
 
-use serde_json::Value;
-
-use crate::rule::Rule;
-
-mod eval;
-mod rule;
+use evaluator::core::rule::Rule;
 
 fn main() {
     let input = fs::read_to_string("rules.json").unwrap();

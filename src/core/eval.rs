@@ -1,6 +1,6 @@
 use thiserror::Error;
 
-use crate::rule::{CompoundPredicate, Operator, Predicate, RawPredicate, Rule};
+use crate::core::rule::{CompoundPredicate, Operator, Predicate, RawPredicate, Rule};
 
 type JsonValue = serde_json::Value;
 
@@ -78,12 +78,9 @@ impl RawPredicate {
         let data = follow_path(&self.path, input)?;
 
         match self.operator {
-            crate::rule::Operator::Equal => Ok(data == &self.value),
-            crate::rule::Operator::NotEqual => Ok(data != &self.value),
-            crate::rule::Operator::Greater
-            | crate::rule::Operator::Less
-            | crate::rule::Operator::GreaterEqual
-            | crate::rule::Operator::LessEqual => {
+            Operator::Equal => Ok(data == &self.value),
+            Operator::NotEqual => Ok(data != &self.value),
+            Operator::Greater | Operator::Less | Operator::GreaterEqual | Operator::LessEqual => {
                 let (Some(lhs), Some(rhs)) = (data.as_f64(), self.value.as_f64()) else {
                     return Err(EvaluationError::type_mismatch(
                         data,
@@ -100,7 +97,7 @@ impl RawPredicate {
                     other => unreachable!("got unexpected non-mathematical operator {other:?}"),
                 })
             }
-            crate::rule::Operator::Contains => {
+            Operator::Contains => {
                 let Some(lhs) = data.as_array() else {
                     return Err(EvaluationError::type_mismatch(
                         data,
@@ -153,7 +150,7 @@ impl CompoundPredicate {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::rule::{all, any, none, not, predicate, rule};
+    use crate::{all, any, none, not, predicate, rule};
     use serde_json::json;
 
     macro_rules! not_an_object_err {
