@@ -6,7 +6,7 @@ use crate::repository::{
 use actix_web::{
     HttpResponse, HttpResponseBuilder, ResponseError, body::BoxBody, http::StatusCode,
 };
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 macro_rules! impl_response_error {
     ($($error:tt {
@@ -58,14 +58,14 @@ impl_response_error!(
     }
 );
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ApiError {
-    error: InnerError,
+    pub error: InnerError,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InnerError {
-    message: String,
+    pub message: String,
 }
 
 impl<E> From<E> for ApiError

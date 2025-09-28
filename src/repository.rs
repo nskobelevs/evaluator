@@ -1,5 +1,5 @@
 use crate::core::{eval::EvaluationError, rule::Rule};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
     hash::Hash,
@@ -7,7 +7,7 @@ use std::{
 };
 use thiserror::Error;
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum RuleEvaluation {
     Pass,

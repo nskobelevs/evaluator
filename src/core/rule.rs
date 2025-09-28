@@ -3,9 +3,9 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields, rename_all = "camelCase")]
 pub struct Rule {
-    pub(crate) id: String,
-    pub(crate) predicate: Predicate,
-    pub(crate) message: String,
+    pub id: String,
+    pub predicate: Predicate,
+    pub message: String,
 }
 
 impl Rule {
@@ -44,9 +44,9 @@ impl From<CompoundPredicate> for Predicate {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields, rename_all = "camelCase")]
 pub struct RawPredicate {
-    pub(crate) path: String,
-    pub(crate) operator: Operator,
-    pub(crate) value: serde_json::Value,
+    pub path: String,
+    pub operator: Operator,
+    pub value: serde_json::Value,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
