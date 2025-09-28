@@ -128,3 +128,126 @@ type Rule = {
   }
 }
 ```
+
+## Sample
+
+<details>
+
+<summary>Rules</summary>
+
+```json
+[
+  {
+    "id": "waterpark_height_rule",
+    "message": "You must be at least 5'2'' to use this water slide.",
+    "predicate": {
+      "any": [
+        {
+          "path": "height.feet",
+          "operator": ">",
+          "value": 5
+        },
+        {
+          "all": [
+            {
+              "path": "height.feet",
+              "operator": "==",
+              "value": 5
+            },
+            {
+              "path": "height.inches",
+              "operator": ">=",
+              "value": 2
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "waterpark_age_rule",
+    "message": "You must be at least age 12 to use this water slide",
+    "predicate": {
+      "all": [
+        {
+          "path": "age",
+          "operator": ">=",
+          "value": 12
+        }
+      ]
+    }
+  }
+]
+```
+
+</details>
+
+### 1 - Pass
+
+```
+curl http://localhost:8080/evaluate?rules=waterpark_height_rule,waterpark_age_rule \
+    -X POST \
+    --header "Content-Type: application/json" \
+    --data '
+{
+  "age": 24,
+  "height": {
+    "feet": 7,
+    "inches": 10
+  }
+}
+'
+```
+
+```
+{
+  "result": "PASS",
+  "reasons": [
+    {
+      "rule": "waterpark_height_rule",
+      "requirement": "You must be at least 5'2'' to use this water slide.",
+      "evaluation": "PASS"
+    },
+    {
+      "rule": "waterpark_age_rule",
+      "requirement": "You must be at least age 12 to use this water slide",
+      "evaluation": "PASS"
+    }
+  ]
+}
+```
+
+### 2 - Fail
+
+```
+curl http://localhost:8080/evaluate?rules=waterpark_height_rule,waterpark_age_rule \
+    -X POST \
+    --header "Content-Type: application/json" \
+    --data '
+{
+  "age": 11,
+  "height": {
+    "feet": 5,
+    "inches": 10
+  }
+}
+'
+```
+
+```
+{
+  "result": "FAIL",
+  "reasons": [
+    {
+      "rule": "waterpark_height_rule",
+      "requirement": "You must be at least 5'2'' to use this water slide.",
+      "evaluation": "PASS"
+    },
+    {
+      "rule": "waterpark_age_rule",
+      "requirement": "You must be at least age 12 to use this water slide",
+      "evaluation": "FAIL"
+    }
+  ]
+}
+```
