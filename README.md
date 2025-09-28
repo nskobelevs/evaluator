@@ -88,7 +88,9 @@ type Rule = {
 };
 ```
 
-**Example:**
+<details>
+
+<summary>Example</summary>
 
 ```JSON
 {
@@ -128,6 +130,8 @@ type Rule = {
   }
 }
 ```
+
+</details>
 
 ## Sample
 
@@ -251,3 +255,124 @@ curl http://localhost:8080/evaluate?rules=waterpark_height_rule,waterpark_age_ru
   ]
 }
 ```
+
+## Notes
+
+### Assumptions / Design Decisions
+
+- `/evalute` takes the list of rules to apply in the `rules` query param.
+  - Since one of the goals was for this endpoint to accept arbitrary JSON the decision was made to include the list of rules to run in the query params instead of having the body be a mix of rule definitions + nested JSON object for testing.
+
+### Edge cases / unhappy path handling
+
+- ✅ Type checking
+  - ✅ Mathematical ordering operators (>, < <=, >=) error if either of the arguments aren't numbers
+  - ✅ Contains errors for non-array checks
+- ⚠️ API Errors
+  - ✅ Creating rule with id that already exists will error with 404 and JSON error
+  - ✅ Trying to get / edit a rule that doesn't exist will error with 404 and JSON error
+  - ✅ Type checking errors will suface as 400 JSON errors.
+  - ❌ JSON deserialization errors aren't surfaced as JSON
+  - ❌ Default 404 page doesn't return any body
+- ⚠️ Handling of missing fields (this _kinda_ mirrors JS behavior of missing fields returning `undefined` and only erroring after but not by explicit design)
+  - ❌ A missing field evaluates to `null` instead of erroring
+  - ✅ Trying to access a field of `null` _will_ error properly. (e.g. `foo.bar` when `foo` does no exist)
+
+### Future Work
+
+- Introduce a better system for error handling (potentially via middleware) to ensure all errors can be returned as JSON.
+- `InMemRuleRepository` that handles rules is susceptible to lock poisoning in the event a panic occurs during the handling of a request, causing future requests to timeout. While errors are properly handeled via `Result`, panics could still be possible so this should be addressed for any extensive use.
+- Logging - adding logging of requests/responses and rule evaluations would be useful for debugging and audits. Something like the `tracing` / `tracing_subscriber` crates would work well to output logs to a file / some logging service.
+- Metrics - it would be useful to emit metrics (e.g. general counts, request latency) to a central system (e.g. Grafana / Prometheus setup) for observability to detect anomalies and find potential areas of improvements.
+- General code improvements - there's some parts of the code that could be structured a little better for better separation. (e.g. `RuleRepository` probably shouldn't be doing the evaluation itself given it's just a wrapper over a db-esque interface)
+- More extensive tests - while the current tests do a good job of having coverage end to end from serialization / deserialization, rule evaluation, response bodies and status codes, there's none the less some gaps with coverage that should be improved. - e.g. endpoints outside of the API.
+
+## Error Samples
+
+<details>
+
+<summary>Duplicate rule creation</summary>
+
+```
+curl http://localhost:8080/rules \
+    -X POST \
+    --header "Content-Type: application/json" \
+    --data '
+{
+  "id": "some-rule",
+  "message": "test",
+  "predicate": {
+    "any": []
+  }
+}
+'
+```
+
+```
+400 Bad Request
+
+
+{
+  "error": {
+    "message": "a rule with id some-rule already exists"
+  }
+}
+```
+
+</details>
+
+<details>
+
+<summary>No existing id reference</summary>
+
+Trying to reference an id that doesn't exist will error. (update / get).
+This does not happen for delete as it's designed to be idempotent.
+
+```
+curl http://localhost:8080/rules/some-non-existing-id -X DELETE
+```
+
+```
+404 Not Found
+
+{
+  "error": {
+    "message": "a rule with id some-non-existing-id does not exist"
+  }
+}
+```
+
+</details>
+
+<details>
+
+<summary>Rule evaluation errors</summary>
+
+Rules themselves enforce various requirements. e.g. ordering operators can only be applied on numbers.
+
+```
+curl http://localhost:8080/evaluate?rules=waterpark_height_rule \
+    -X POST \
+    --header "Content-Type: application/json" \
+    --data '
+{
+  "age": 24,
+  "height": {
+    "feet": "7 feet",
+    "inches": 10
+  }
+}
+'
+```
+
+```
+404 Bad Request
+
+{
+  "error": {
+    "message": "failed to evaluate rule waterpark_height_rule: cannot compare string with number using operator Greater"
+  }
+}
+```
+
+</details>
