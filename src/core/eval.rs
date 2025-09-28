@@ -4,7 +4,7 @@ use crate::core::rule::{CompoundPredicate, Operator, Predicate, RawPredicate, Ru
 
 type JsonValue = serde_json::Value;
 
-#[derive(Debug, PartialEq, Eq, Error)]
+#[derive(Debug, Error, PartialEq, Eq, Hash)]
 pub enum EvaluationError {
     #[error("cannot read field `{field}` of type {kind}")]
     NotAnObject { field: String, kind: &'static str },

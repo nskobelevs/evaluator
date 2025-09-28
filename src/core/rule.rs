@@ -8,6 +8,20 @@ pub struct Rule {
     pub(crate) message: String,
 }
 
+impl Rule {
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn predicate(&self) -> &Predicate {
+        &self.predicate
+    }
+
+    pub fn message(&self) -> &str {
+        &self.message
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(untagged, deny_unknown_fields, rename_all = "camelCase")]
 pub enum Predicate {
@@ -44,7 +58,7 @@ pub enum CompoundPredicate {
     None(Vec<Predicate>),
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum Operator {
     #[serde(alias = "==")]
