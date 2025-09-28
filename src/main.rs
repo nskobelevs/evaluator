@@ -130,7 +130,6 @@ mod tests {
     use evaluator::repository::{Evaluation, EvaluationReason, EvaluationResult};
     use evaluator::{predicate, rule};
     use serde_json::json;
-    use std::collections::HashMap;
 
     macro_rules! create_test_app {
         () => {

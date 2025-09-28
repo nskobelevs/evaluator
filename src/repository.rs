@@ -211,7 +211,7 @@ impl RuleRepository for InMemRuleRepository {
                 });
             }
 
-            is_pass &= evaluation == true;
+            is_pass &= evaluation;
         }
 
         Ok(Evaluation {
