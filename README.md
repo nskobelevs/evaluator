@@ -267,7 +267,7 @@ curl http://localhost:8080/evaluate?rules=waterpark_height_rule,waterpark_age_ru
 
 - ✅ Type checking
   - ✅ Mathematical ordering operators (>, < <=, >=) error if either of the arguments aren't numbers
-  - ✅ Contains errors for non-array checks
+  - ✅ `contains` operator errors for non-arrays
 - ⚠️ API Errors
   - ✅ Creating rule with id that already exists will error with 404 and JSON error
   - ✅ Trying to get / edit a rule that doesn't exist will error with 404 and JSON error
@@ -280,9 +280,11 @@ curl http://localhost:8080/evaluate?rules=waterpark_height_rule,waterpark_age_ru
 
 ### Future Work
 
+- Dockerfile improvements - the current Docker setup is minimal and requires fetching all depencies and building from scratch each time. This could be improved with a caching layer, such as [cargo-chef](https://github.com/LukeMathWalker/cargo-chef) to allow incremental builds and significantly speed up start up times.
 - Introduce a better system for error handling (potentially via middleware) to ensure all errors can be returned as JSON.
 - `InMemRuleRepository` that handles rules is susceptible to lock poisoning in the event a panic occurs during the handling of a request, causing future requests to timeout. While errors are properly handeled via `Result`, panics could still be possible so this should be addressed for any extensive use.
 - Logging - adding logging of requests/responses and rule evaluations would be useful for debugging and audits. Something like the `tracing` / `tracing_subscriber` crates would work well to output logs to a file / some logging service.
+- Caching - if it's common for the same input to be evaluated multiple times caching might be useful to avoid recomputation when neither the rule nor the input have changed.
 - Metrics - it would be useful to emit metrics (e.g. general counts, request latency) to a central system (e.g. Grafana / Prometheus setup) for observability to detect anomalies and find potential areas of improvements.
 - General code improvements - there's some parts of the code that could be structured a little better for better separation. (e.g. `RuleRepository` probably shouldn't be doing the evaluation itself given it's just a wrapper over a db-esque interface)
 - More extensive tests - while the current tests do a good job of having coverage end to end from serialization / deserialization, rule evaluation, response bodies and status codes, there's none the less some gaps with coverage that should be improved. - e.g. endpoints outside of the API.
