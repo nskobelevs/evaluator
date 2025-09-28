@@ -1,5 +1,29 @@
 # Rule Evaluator
 
+## Running
+
+### Docker
+
+The server can be run on Docker via the provider `Dockerfile` and `docker-compose.yaml`.
+
+```
+docker compose up --build
+```
+
+The server will be accessible on `localhost:8080`.
+
+### Locally
+
+The server can also be run locally directly via `cargo`
+
+```
+git clone <todo>
+cd <todo>
+cargo run
+```
+
+The server will be accessible on `localhost:8080`.
+
 ## Schema
 
 ### Predicate
