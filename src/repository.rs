@@ -8,10 +8,23 @@ use std::{
 use thiserror::Error;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct Evaluation {
+    pub result: EvaluationResult,
+    pub reasons: Vec<EvaluationReason>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct EvaluationReason {
+    pub rule: String,
+    pub requirement: String,
+    pub evaluation: EvaluationResult,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
-pub enum RuleEvaluation {
+pub enum EvaluationResult {
     Pass,
-    Fail(String),
+    Fail,
 }
 
 #[derive(Debug, Error, PartialEq, Eq, Hash)]
@@ -84,7 +97,7 @@ pub trait RuleRepository: Clone + Send + Sync + 'static {
         &self,
         ids: &[String],
         input: serde_json::Value,
-    ) -> impl Future<Output = Result<HashMap<String, RuleEvaluation>, EvaluateRuleError>> + Send;
+    ) -> impl Future<Output = Result<Evaluation, EvaluateRuleError>> + Send;
 }
 
 #[derive(Debug, Clone)]
@@ -168,10 +181,12 @@ impl RuleRepository for InMemRuleRepository {
         &self,
         ids: &[String],
         input: serde_json::Value,
-    ) -> Result<HashMap<String, RuleEvaluation>, EvaluateRuleError> {
+    ) -> Result<Evaluation, EvaluateRuleError> {
         let rules = self.rules.read().map_err(|_| EvaluateRuleError::Unknown)?;
 
-        let mut results = HashMap::new();
+        let mut reasons = Vec::with_capacity(ids.len());
+
+        let mut is_pass = true;
 
         for id in ids {
             let Some(rule) = rules.get(id) else {
@@ -182,16 +197,31 @@ impl RuleRepository for InMemRuleRepository {
                 .evaluate(&input)
                 .map_err(|err| EvaluateRuleError::EvaluationError(id.clone(), err))?;
 
-            let evaluation = if evaluation {
-                RuleEvaluation::Pass
+            if evaluation {
+                reasons.push(EvaluationReason {
+                    rule: id.clone(),
+                    evaluation: EvaluationResult::Pass,
+                    requirement: rule.message.clone(),
+                });
             } else {
-                RuleEvaluation::Fail(rule.message.clone())
-            };
+                reasons.push(EvaluationReason {
+                    rule: id.clone(),
+                    evaluation: EvaluationResult::Fail,
+                    requirement: rule.message.clone(),
+                });
+            }
 
-            results.insert(id.clone(), evaluation);
+            is_pass &= evaluation == true;
         }
 
-        Ok(results)
+        Ok(Evaluation {
+            result: if is_pass {
+                EvaluationResult::Pass
+            } else {
+                EvaluationResult::Fail
+            },
+            reasons,
+        })
     }
 }
 

@@ -69,37 +69,41 @@
     }
   },
   {
-    "id": "waterpark_rule",
-    "message": "You must be at least 5'2'' and over the age of 12 to use this water slide",
+    "id": "waterpark_height_rule",
+    "message": "You must be at least 5'2'' to use this water slide.",
+    "predicate": {
+      "any": [
+        {
+          "path": "height.feet",
+          "operator": ">",
+          "value": 5
+        },
+        {
+          "all": [
+            {
+              "path": "height.feet",
+              "operator": "==",
+              "value": 5
+            },
+            {
+              "path": "height.inches",
+              "operator": ">=",
+              "value": 2
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "waterpark_age_rule",
+    "message": "You must be at least age 12 to use this water slide",
     "predicate": {
       "all": [
         {
           "path": "age",
           "operator": ">=",
           "value": 12
-        },
-        {
-          "any": [
-            {
-              "path": "height.feet",
-              "operator": ">",
-              "value": 5
-            },
-            {
-              "all": [
-                {
-                  "path": "height.feet",
-                  "operator": "==",
-                  "value": 5
-                },
-                {
-                  "path": "height.inches",
-                  "operator": ">=",
-                  "value": 2
-                }
-              ]
-            }
-          ]
         }
       ]
     }

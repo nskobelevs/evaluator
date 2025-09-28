@@ -127,7 +127,7 @@ mod tests {
     use super::*;
     use actix_web::http::StatusCode;
     use actix_web::{App, test, web};
-    use evaluator::repository::RuleEvaluation;
+    use evaluator::repository::{Evaluation, EvaluationReason, EvaluationResult};
     use evaluator::{predicate, rule};
     use serde_json::json;
     use std::collections::HashMap;
@@ -215,8 +215,7 @@ mod tests {
                 .uri(&format!("/evaluate?rules={}", ids))
                 .set_json(&$input)
                 .to_request();
-            let resp: HashMap<String, RuleEvaluation> =
-                test::call_and_read_body_json(&$app, req).await;
+            let resp: Evaluation = test::call_and_read_body_json(&$app, req).await;
 
             resp
         }};
@@ -304,12 +303,19 @@ mod tests {
         create_rule!(app, rule3);
 
         let resp = evaluate!(app, ["rule-1", "rule-2"], json!({"foo": 10}));
-        assert_eq!(resp.len(), 2);
-        assert_eq!(resp.get("rule-1"), Some(&RuleEvaluation::Pass));
-        assert_eq!(
-            resp.get("rule-2"),
-            Some(&RuleEvaluation::Fail("some other message".to_owned()))
-        );
-        assert_eq!(resp.get("rule-3"), None);
+        assert_eq!(resp.result, EvaluationResult::Fail);
+        assert_eq!(resp.reasons.len(), 2);
+
+        assert!(resp.reasons.contains(&EvaluationReason {
+            rule: "rule-1".to_owned(),
+            requirement: "some message".to_owned(),
+            evaluation: EvaluationResult::Pass,
+        }));
+
+        assert!(resp.reasons.contains(&EvaluationReason {
+            rule: "rule-2".to_owned(),
+            requirement: "some other message".to_owned(),
+            evaluation: EvaluationResult::Fail,
+        }));
     }
 }
