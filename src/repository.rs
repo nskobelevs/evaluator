@@ -1,4 +1,5 @@
 use crate::core::{eval::EvaluationError, rule::Rule};
+use serde::Serialize;
 use std::{
     collections::HashMap,
     hash::Hash,
@@ -6,7 +7,8 @@ use std::{
 };
 use thiserror::Error;
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize)]
+#[serde(rename_all = "UPPERCASE")]
 pub enum RuleEvaluation {
     Pass,
     Fail(String),
@@ -74,6 +76,7 @@ pub trait RuleRepository: Clone + Send + Sync + 'static {
 
     fn update(
         &self,
+        id: String,
         new_rule: Rule,
     ) -> impl Future<Output = Result<Option<Rule>, UpdateRuleError>> + Send;
 
@@ -90,9 +93,15 @@ pub struct InMemRuleRepository {
 }
 
 impl InMemRuleRepository {
-    pub fn new(rules: HashMap<String, Rule>) -> Self {
+    pub fn new(rules: &[Rule]) -> Self {
         Self {
-            rules: Arc::new(RwLock::new(rules)),
+            rules: Arc::new(RwLock::new(
+                rules
+                    .iter()
+                    .cloned()
+                    .map(|rule| (rule.id.clone(), rule))
+                    .collect(),
+            )),
         }
     }
 
@@ -141,16 +150,18 @@ impl RuleRepository for InMemRuleRepository {
         Ok(rules.remove(id))
     }
 
-    async fn update(&self, new_rule: Rule) -> Result<Option<Rule>, UpdateRuleError> {
+    async fn update(&self, id: String, new_rule: Rule) -> Result<Option<Rule>, UpdateRuleError> {
         let mut rules = self.rules.write().map_err(|_| UpdateRuleError::Unknown)?;
-
-        let id = new_rule.id().to_owned();
 
         if !rules.contains_key(&id) {
             return Err(UpdateRuleError::NoSuchRule(id.clone()));
         }
 
-        Ok(rules.insert(id, new_rule))
+        let old_rule = rules.remove(&id);
+
+        rules.insert(new_rule.id.clone(), new_rule);
+
+        Ok(old_rule)
     }
 
     async fn evaluate(
@@ -174,7 +185,7 @@ impl RuleRepository for InMemRuleRepository {
             let evaluation = if evaluation {
                 RuleEvaluation::Pass
             } else {
-                RuleEvaluation::Fail(rule.id.clone())
+                RuleEvaluation::Fail(rule.message.clone())
             };
 
             results.insert(id.clone(), evaluation);
@@ -315,12 +326,12 @@ mod tests {
                 .await
                 .expect("rule creation should not fail");
 
-            let updated_rule = rule!("rule-1", "updated message", predicate!("foo" == 10));
+            let updated_rule = rule!("rule-2", "updated message", predicate!("foo" == 10));
 
             assert_repository_contains!(db, rule);
             assert_repository_does_not_contain!(db, updated_rule);
 
-            db.update(updated_rule.clone())
+            db.update(rule.id.clone(), updated_rule.clone())
                 .await
                 .expect("update should not fail");
 
@@ -339,7 +350,7 @@ mod tests {
 
             let updated_rule = rule!("rule-2", "updated message", predicate!("foo" == 10));
 
-            let update_result = db.update(updated_rule.clone()).await;
+            let update_result = db.update("rule-3".to_owned(), updated_rule.clone()).await;
 
             assert!(matches!(update_result, Err(UpdateRuleError::NoSuchRule(_))));
         }
