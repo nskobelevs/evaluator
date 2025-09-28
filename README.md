@@ -286,7 +286,7 @@ curl http://localhost:8080/evaluate?rules=waterpark_height_rule,waterpark_age_ru
 - Logging - adding logging of requests/responses and rule evaluations would be useful for debugging and audits. Something like the `tracing` / `tracing_subscriber` crates would work well to output logs to a file / some logging service.
 - Caching - if it's common for the same input to be evaluated multiple times caching might be useful to avoid recomputation when neither the rule nor the input have changed.
 - Metrics - it would be useful to emit metrics (e.g. general counts, request latency) to a central system (e.g. Grafana / Prometheus setup) for observability to detect anomalies and find potential areas of improvements.
-- General code improvements - there's some parts of the code that could be structured a little better for better separation. (e.g. `RuleRepository` probably shouldn't be doing the evaluation itself given it's just a wrapper over a db-esque interface)
+- General code improvements - there's some parts of the code that could be structured a little better for better separation. (e.g. `RuleRepository` probably shouldn't be doing the evaluation itself given it's just a wrapper over a db-esque interface). The repository interface and `InMemRuleRepository` could likely also be a little improved to avoid the repetitive String cloning in some places.
 - More extensive tests - while the current tests do a good job of having coverage end to end from serialization / deserialization, rule evaluation, response bodies and status codes, there's none the less some gaps with coverage that should be improved. - e.g. endpoints outside of the API.
 
 ## Error Samples
