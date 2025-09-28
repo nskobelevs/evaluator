@@ -1,6 +1,6 @@
 [
   {
-    "name": "Simple Rule",
+    "id": "Simple Rule",
     "message": "field foo must be 10",
     "predicate": {
       "path": "foo",
@@ -9,7 +9,7 @@
     }
   },
   {
-    "name": "And Rule",
+    "id": "And Rule",
     "message": "fizz must be 3 and buzz must be 5",
     "predicate": {
       "all": [
@@ -28,7 +28,7 @@
     }
   },
   {
-    "name": "Complicated Rule",
+    "id": "Complicated Rule",
     "message": "Data must adhere to compilcated spec",
     "predicate": {
       "any": [
@@ -69,7 +69,7 @@
     }
   },
   {
-    "name": "Sample Rule",
+    "id": "Sample Rule",
     "message": "You must be at least 5'2'' and over the age of 12 to use this water slide",
     "predicate": {
       "all": [
