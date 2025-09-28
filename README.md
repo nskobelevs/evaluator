@@ -54,11 +54,11 @@ type CompoundPredicate =
 
 ### Rule
 
-A rule is defined by a name, an error message in the case of failure, and a predicate tree consisting of nested conditions.
+A rule is defined by an id, an error message in the case of failure, and a predicate tree consisting of nested conditions.
 
 ```typescript
 type Rule = {
-  name: string;
+  id: string;
   message: string;
   predicate: Predicate;
 };
@@ -68,7 +68,7 @@ type Rule = {
 
 ```JSON
 {
-  "name": "Waterpark Rule",
+  "id": "waterpark-rule",
   "message": "You must be at least 5'2'' and over the age of 12 to use this water slide",
   "predicate": {
     "all": [

@@ -3,9 +3,9 @@ pub mod rule;
 
 #[macro_export]
 macro_rules! rule {
-    ($name:literal, $message:literal, $predicate:expr) => {
+    ($id:literal, $message:literal, $predicate:expr) => {
         $crate::core::rule::Rule {
-            name: String::from($name),
+            id: String::from($id),
             message: String::from($message),
             predicate: $crate::core::rule::Predicate::from($predicate),
         }

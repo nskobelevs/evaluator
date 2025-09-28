@@ -3,14 +3,14 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields, rename_all = "camelCase")]
 pub struct Rule {
-    pub(crate) name: String,
+    pub(crate) id: String,
     pub(crate) predicate: Predicate,
     pub(crate) message: String,
 }
 
 impl Rule {
-    pub fn name(&self) -> &str {
-        &self.name
+    pub fn id(&self) -> &str {
+        &self.id
     }
 
     pub fn predicate(&self) -> &Predicate {
@@ -192,7 +192,7 @@ mod tests {
             assert_deserialize!(
                 Rule,
                 r#"{
-                    "name": "rule-1",
+                    "id": "rule-1",
                     "message": "Important rule failed",
                     "predicate": {
                         "any": [

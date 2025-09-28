@@ -123,7 +123,7 @@ impl RuleRepository for InMemRuleRepository {
     async fn create(&self, rule: Rule) -> Result<(), CreateRuleError> {
         let mut rules = self.rules.write().map_err(|_| CreateRuleError::Unknown)?;
 
-        let id = rule.name().to_owned();
+        let id = rule.id().to_owned();
 
         #[allow(clippy::map_entry)]
         if rules.contains_key(&id) {
@@ -144,7 +144,7 @@ impl RuleRepository for InMemRuleRepository {
     async fn update(&self, new_rule: Rule) -> Result<Option<Rule>, UpdateRuleError> {
         let mut rules = self.rules.write().map_err(|_| UpdateRuleError::Unknown)?;
 
-        let id = new_rule.name().to_owned();
+        let id = new_rule.id().to_owned();
 
         if !rules.contains_key(&id) {
             return Err(UpdateRuleError::NoSuchRule(id.clone()));
@@ -174,7 +174,7 @@ impl RuleRepository for InMemRuleRepository {
             let evaluation = if evaluation {
                 RuleEvaluation::Pass
             } else {
-                RuleEvaluation::Fail(rule.name.clone())
+                RuleEvaluation::Fail(rule.id.clone())
             };
 
             results.insert(id.clone(), evaluation);
@@ -205,7 +205,7 @@ mod tests {
 
                 assert!(rules.contains(&$rule));
 
-                let fetched_rule = $db.get(&$rule.name).await.expect("get failed unexpectedly");
+                let fetched_rule = $db.get(&$rule.id).await.expect("get failed unexpectedly");
                 assert_eq!(fetched_rule, $rule);
             }};
         }
@@ -216,11 +216,11 @@ mod tests {
 
                 assert!(!rules.contains(&$rule));
 
-                let fetched_rule = $db.get(&$rule.name).await;
+                let fetched_rule = $db.get(&$rule.id).await;
 
                 match fetched_rule {
                     err @ Err(_) => {
-                        assert_eq!(err, Err(GetRuleError::NoSuchRule($rule.name.clone())));
+                        assert_eq!(err, Err(GetRuleError::NoSuchRule($rule.id.clone())));
                     }
                     Ok(fetched_rule) => {
                         assert_ne!(fetched_rule, $rule);
@@ -256,7 +256,7 @@ mod tests {
             assert_repository_size!(db, 1);
             assert_repository_contains!(db, rule);
 
-            db.delete(&rule.name).await.expect("delete should not fail");
+            db.delete(&rule.id).await.expect("delete should not fail");
 
             assert_repository_size!(db, 0);
             assert_repository_does_not_contain!(db, rule);
@@ -293,12 +293,12 @@ mod tests {
             assert_repository_size!(db, 1);
             assert_repository_contains!(db, rule);
 
-            db.delete(&rule.name).await.expect("delete should not fail");
+            db.delete(&rule.id).await.expect("delete should not fail");
 
             assert_repository_size!(db, 0);
             assert_repository_does_not_contain!(db, rule);
 
-            db.delete(&rule.name)
+            db.delete(&rule.id)
                 .await
                 .expect("delete of non existing rule should not fail");
 
